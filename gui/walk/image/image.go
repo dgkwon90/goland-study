@@ -51,7 +51,7 @@ func StartApp() {
 	var statuBar *walk.StatusBarItem
 	var inputFiles []string
 	//fileCount := 0
-	options := &Options{"3", "1"}
+	options := &Options{"3", "2"}
 
 	MainWindow{
 		Title:   "솔이를 위한 이미지 변환기 - v1.0",
@@ -176,10 +176,10 @@ func StartApp() {
 								//imageChangeCmd := exec.Command("go", "version")
 
 								for i, filePath := range inputFiles {
-									slice := strings.Split(filePath, ".")
-									fileName := slice[1]
-									imageChangeCmd := exec.Command("waifu2x-ncnn-vulkan.exe ",
-										"-i", filePath,
+									slice := strings.Split(filePath, "\\")
+									fileName := slice[len(slice)-1]
+									imageChangeCmd := exec.Command("./waifu2x-ncnn-vulkan-20210521-windows/waifu2x-ncnn-vulkan.exe",
+										"-i", "\""+filePath+"\"",
 										"-o", "./OutputImage/Change_"+fileName,
 										"-n", options.Noise,
 										"-s", options.Scale,
@@ -187,16 +187,17 @@ func StartApp() {
 
 									fmt.Println("Command : ", imageChangeCmd.String())
 
-									if dateOut, err := imageChangeCmd.Output(); err != nil {
+									if err := imageChangeCmd.Run(); err != nil {
+										//if dateOut, err := imageChangeCmd.Output(); err != nil {
 										//Fail
-										fmt.Println("Error: ", err)
+										//fmt.Println("Error: ", err)
 										statuBar.SetText(StatusNOK)
 										statuBar.SetIcon(iconNOK)
 										inputFiles[i] += " => (Fail:" + err.Error() + ")"
 									} else {
 										//Success
 										successCount++
-										fmt.Println("dateOut: ", string(dateOut))
+										//fmt.Println("dateOut: ", string(dateOut))
 										statuBar.SetText(StatusStart + "(" + strconv.Itoa(successCount) + "/" + strconv.Itoa(fileCount) + ")")
 										inputFiles[i] += " => (Success)"
 									}
