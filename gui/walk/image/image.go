@@ -4,15 +4,19 @@ import (
 	"fmt"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 )
+
+const WinWidth = 1000
+const WinHeight = 800
 
 const RecommandText = "변환할 PNG 파일들을 이곳으로 드로그앤 드랍 해주세요!"
 
 const StatusInit = "작업 대기 상태"
+const StatusNullFindPath = "경로가 비어 있음"
 const StatusNullFile = "작업 파일 없음"
 const StatusStart = "작업 진행중"
 const StatusOK = "작업 완료"
@@ -23,34 +27,22 @@ type Options struct {
 	Scale string
 }
 
-const WinWidth = 1000
-const WinHeight = 800
+var iconStop, iconWarning, iconStart, iconOK, iconNOK *walk.Icon
+
+func initStatusIcon() {
+	iconStop, _ = walk.NewIconFromFile("./icon/stop.ico")
+	iconWarning, _ = walk.NewIconFromFile("./icon/warning.ico")
+	iconStart, _ = walk.NewIconFromFile("./icon/start.ico")
+	iconOK, _ = walk.NewIconFromFile("./icon/ok.ico")
+	iconNOK, _ = walk.NewIconFromFile("./icon/nok.ico")
+}
 
 func StartApp() {
-	iconStop, err := walk.NewIconFromFile("./icon/stop.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
-	iconWarning, err := walk.NewIconFromFile("./icon/warning.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
-	iconStart, err := walk.NewIconFromFile("./icon/start.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
-	iconOK, err := walk.NewIconFromFile("./icon/ok.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
-	iconNOK, err := walk.NewIconFromFile("./icon/nok.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//var findPathTextEdit *walk.TextEdit
 	var textEdit *walk.TextEdit
 	var statuBar *walk.StatusBarItem
+	initStatusIcon()
 	var inputFiles []string
-	//fileCount := 0
 	options := &Options{"3", "2"}
 
 	MainWindow{
@@ -75,6 +67,58 @@ func StartApp() {
 		Children: []Widget{
 			VSplitter{
 				Children: []Widget{
+					HSplitter{
+						//Children: []Widget{
+						//	Label{
+						//		Text: "변경 Image 경로 :",
+						//	},
+						//	TextEdit {
+						//		AssignTo: &findPathTextEdit,
+						//		CompactHeight:true,
+						//	},
+						//	PushButton{
+						//		Text: "검색",
+						//		OnClicked: func() {
+						//			if len(findPathTextEdit.Text()) <= 0 {
+						//				//warning
+						//				statuBar.SetText(StatusNullFile)
+						//				statuBar.SetIcon(iconWarning)
+						//			} else {
+						//				var findFiles []string
+						//				err := filepath.Walk(findPathTextEdit.Text(), func(path string, info os.FileInfo, err error) error {
+						//					if err != nil {
+						//						fmt.Println(err)
+						//						return nil
+						//					}
+						//					if !info.IsDir() &&
+						//						(filepath.Ext(path) == ".png"  ||
+						//							(filepath.Ext(path) == ".PNG") ||
+						//							(filepath.Ext(path) == ".jpg") ||
+						//							(filepath.Ext(path) == ".JPG") ||
+						//							(filepath.Ext(path) == ".jpeg") ||
+						//							(filepath.Ext(path) == ".JPEG")) {
+						//						newPath := strings.Replace(path, "\\", "/", -1)
+						//						findFiles = append(findFiles, newPath)
+						//					}
+						//					return nil
+						//				})
+						//				if err != nil || len(findFiles) <= 0 {
+						//					//Warning
+						//					statuBar.SetText(StatusNullFile)
+						//					statuBar.SetIcon(iconWarning)
+						//				} else {
+						//					inputFiles = findFiles
+						//					fmt.Println("Drop count : ", len(inputFiles))
+						//					textEdit.SetText(strings.Join(findFiles, "\r\n"))
+						//					statuBar.SetText(StatusInit)
+						//					statuBar.SetIcon(iconStop)
+						//				}
+						//			}
+						//		},
+						//	},
+						//},
+					},
+
 					HSplitter{
 						Children: []Widget{
 							Label{
@@ -169,37 +213,53 @@ func StartApp() {
 							if fileCount > 0 {
 								//start
 								successCount := 0
+								resultFiles := inputFiles
 								statuBar.SetText(StatusStart + "(" + strconv.Itoa(successCount) + "/" + strconv.Itoa(fileCount) + ")")
 								statuBar.SetIcon(iconStart)
 
-								//run command
-								//imageChangeCmd := exec.Command("go", "version")
-
 								for i, filePath := range inputFiles {
-									slice := strings.Split(filePath, "\\")
+
+									newPath := strings.Replace(filePath, "\\", "/", -1)
+									slice := strings.Split(newPath, "/")
 									fileName := slice[len(slice)-1]
+
 									imageChangeCmd := exec.Command("./waifu2x-ncnn-vulkan-20210521-windows/waifu2x-ncnn-vulkan.exe",
-										"-i", "\""+filePath+"\"",
+										"-i", newPath,
 										"-o", "./OutputImage/Change_"+fileName,
 										"-n", options.Noise,
 										"-s", options.Scale,
 									)
 
-									fmt.Println("Command : ", imageChangeCmd.String())
+									//imageChangeCmd := exec.Command("./waifu2x-ncnn-vulkan-20210521-windows/waifu2x-ncnn-vulkan.exe",
+									//	"-i", "E:/Workspace/Go/src/04_dgkwon90/InputImage/1.jpg",
+									//	"-o", "./OutputImage/Change_1.jpg",
+									//	"-n", "3",
+									//	"-s", "2",
+									//)
+									//
+									//if err := imageChangeCmd.Run(); err != nil {
+									//	//Fail
+									//	fmt.Println("Error: ", err)
+									//} else {
+									//	//Success
+									//	fmt.Println(imageChangeCmd.String())
+									//	fmt.Println("Success")
+									//}
+
+									imageChangeCmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+									fmt.Println("Command : \n", imageChangeCmd.String())
 
 									if err := imageChangeCmd.Run(); err != nil {
-										//if dateOut, err := imageChangeCmd.Output(); err != nil {
 										//Fail
-										//fmt.Println("Error: ", err)
+										fmt.Println("Error: ", err)
 										statuBar.SetText(StatusNOK)
 										statuBar.SetIcon(iconNOK)
-										inputFiles[i] += " => (Fail:" + err.Error() + ")"
+										resultFiles[i] += " => (Fail:" + err.Error() + ")"
 									} else {
 										//Success
 										successCount++
-										//fmt.Println("dateOut: ", string(dateOut))
 										statuBar.SetText(StatusStart + "(" + strconv.Itoa(successCount) + "/" + strconv.Itoa(fileCount) + ")")
-										inputFiles[i] += " => (Success)"
+										resultFiles[i] += " => (Success)"
 									}
 									textEdit.SetText(strings.Join(inputFiles, "\r\n"))
 								}

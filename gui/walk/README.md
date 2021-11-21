@@ -11,4 +11,9 @@ Walk란 "Windows Application Library Kit"을 의미한다.
     go get github.com/lxn/walk
     go get github.com/akavel/rsrc
 
-##
+## build 명령어
+    //mainfest 생성
+    rsrc -manifest test.manifest -o rsrc.syso
+
+    // console창 안나오게 build 
+    go build -ldflags="-H windowsgui"
