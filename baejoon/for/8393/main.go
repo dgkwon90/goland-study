@@ -10,4 +10,8 @@ func main() {
 		s += i
 	}
 	fmt.Print(s)
+	// 더 좋은 방법
+	// to := 0
+	// fmt.Scan(&to)
+	// fmt.Println(to * (to + 1) / 2)
 }

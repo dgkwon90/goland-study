@@ -3,16 +3,12 @@ package main
 import "fmt"
 
 func main() {
-	var c, a, b int
-	var result []int
+	var c int
 
 	fmt.Scan(&c)
-	for i := 0; i < c; i++ {
+	for ; 0 < c; c-- {
+		var a, b int
 		fmt.Scan(&a, &b)
-		result = append(result, a+b)
-	}
-
-	for _, value := range result {
-		fmt.Println(value)
+		fmt.Println(a + b)
 	}
 }
