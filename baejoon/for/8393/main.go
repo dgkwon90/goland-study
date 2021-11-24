@@ -1,3 +1,4 @@
+//1+N 까지 합 구하기
 package main
 
 import "fmt"

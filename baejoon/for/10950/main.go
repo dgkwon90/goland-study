@@ -1,3 +1,4 @@
+//A+B 여러번 출력
 package main
 
 import "fmt"
