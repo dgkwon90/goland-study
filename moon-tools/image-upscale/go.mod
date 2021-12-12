@@ -1,4 +1,4 @@
-module github.com/dgkwon90/golang-study/image-upscale
+module github.com/dgkwon90/golang-study/moon-tools/image-upscale
 
 go 1.15
 
