@@ -2,9 +2,9 @@ package window
 
 import (
 	"fmt"
+	"github.com/dgkwon90/golang-study/image-upscale/controller"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"image-upscale/controller"
 	"strconv"
 	"strings"
 )

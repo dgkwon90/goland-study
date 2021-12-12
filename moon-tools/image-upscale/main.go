@@ -1,7 +1,7 @@
 package main
 
 import (
-	"image-upscale/window"
+	"github.com/dgkwon90/golang-study/window"
 )
 
 func main() {
