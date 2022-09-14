@@ -8,18 +8,16 @@ import (
 )
 
 type Pub struct {
-	Url      string
-	Name     string
-	Exchange string
-	Conn     *amqp.Connection
-	Channel  *amqp.Channel
+	Url     string
+	Name    string
+	Conn    *amqp.Connection
+	Channel *amqp.Channel
 }
 
-func NewPub(url, name, exchange string) *Pub {
+func NewPub(url, name string) *Pub {
 	pub := new(Pub)
 	pub.Url = url
 	pub.Name = name
-	pub.Exchange = exchange
 	fmt.Printf("[%v] New Pub :%v\n", pub.Name, pub)
 	return pub
 }
@@ -54,12 +52,12 @@ func (p *Pub) Close() {
 	}
 }
 
-func (p *Pub) Publish(routingKey string, msgHeader map[string]interface{}, msgBody []byte) error {
+func (p *Pub) Publish(exchangeName string, routingKey string, msgHeader map[string]interface{}, msgBody []byte) error {
 	mandatory := false
 	immediate := false
 	publishErr := p.Channel.PublishWithContext(
 		context.Background(), // context
-		p.Exchange,           // exchange
+		exchangeName,         // exchange
 		routingKey,           // routing key
 		mandatory,            // mandatory
 		immediate,            // immediate
@@ -72,6 +70,6 @@ func (p *Pub) Publish(routingKey string, msgHeader map[string]interface{}, msgBo
 		fmt.Printf("[%v] publish Error %v\n", p.Name, publishErr)
 		return publishErr
 	}
-	fmt.Printf("[%v] push message: %v => \n", p.Name, msgHeader)
+	fmt.Printf("[%v] push message: [%v] %v  => \n", p.Name, routingKey, msgHeader)
 	return nil
 }

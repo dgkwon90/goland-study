@@ -55,11 +55,12 @@ func StartConsumers( /*doneStart chan bool*/ ) {
 
 func StartPublisher() {
 	fmt.Println("\n\nStart Publisher!!!!!!!!!!!!!!!!!!!!!!!")
-	pub := publisher.NewPub(rabbitMqUrl, "publisher:1", exchangeName)
+	pub := publisher.NewPub(rabbitMqUrl, "publisher:1")
 	defer pub.Close()
 	pub.Connection()
 	pub.OpenChannel()
 	pub.Publish(
+		exchangeName,
 		"user.created",
 		map[string]interface{}{
 			"Msg": 1,
@@ -68,6 +69,7 @@ func StartPublisher() {
 	)
 	time.Sleep(time.Second * 1)
 	pub.Publish(
+		exchangeName,
 		"user.created",
 		map[string]interface{}{
 			"Msg": 2,
@@ -76,6 +78,7 @@ func StartPublisher() {
 	)
 	time.Sleep(time.Second * 1)
 	pub.Publish(
+		exchangeName,
 		"user.created",
 		map[string]interface{}{
 			"Msg": 3,
@@ -84,6 +87,7 @@ func StartPublisher() {
 	)
 	time.Sleep(time.Second * 1)
 	pub.Publish(
+		exchangeName,
 		"user.updated",
 		map[string]interface{}{
 			"Msg": 4,
@@ -92,6 +96,7 @@ func StartPublisher() {
 	)
 	time.Sleep(time.Second * 1)
 	pub.Publish(
+		"",
 		"ucl.two",
 		map[string]interface{}{
 			"Msg": 5,
