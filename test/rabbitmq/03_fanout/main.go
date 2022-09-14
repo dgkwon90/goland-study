@@ -12,7 +12,7 @@ const rabbitMqUrl = "amqp://dgkwon:test001@192.168.56.1:5672/"
 const exchangeName = "fanout_test_exchange"
 
 func StartConsumers( /*doneStart chan bool*/ ) {
-	fmt.Println("Start Consumers!!!!!!!!!!!!!!!!!!!!!!!")
+	fmt.Println("\n\nStart Consumers!!!!!!!!!!!!!!!!!!!!!!!")
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -46,7 +46,7 @@ func StartConsumers( /*doneStart chan bool*/ ) {
 }
 
 func StartPublisher() {
-	fmt.Println("Start Publisher!!!!!!!!!!!!!!!!!!!!!!!")
+	fmt.Println("\n\nStart Publisher!!!!!!!!!!!!!!!!!!!!!!!")
 	pub := publisher.NewPub(rabbitMqUrl, "publisher:1", exchangeName)
 	defer pub.Close()
 	pub.Connection()
