@@ -54,7 +54,7 @@ func (p *Pub) Close() {
 	}
 }
 
-func (p *Pub) Publish(msgHeader map[string]interface{}, msgBody []byte) {
+func (p *Pub) Publish(msgHeader map[string]interface{}, msgBody []byte) error {
 	routingKey := ""
 	mandatory := false
 	immediate := false
@@ -71,6 +71,8 @@ func (p *Pub) Publish(msgHeader map[string]interface{}, msgBody []byte) {
 		})
 	if publishErr != nil {
 		fmt.Printf("[%v] publish Error %v\n", p.Name, publishErr)
+		return publishErr
 	}
-	fmt.Printf("[%v] push message: %v\n", p.Name, msgHeader)
+	fmt.Printf("[%v] push message: %v => \n", p.Name, msgHeader)
+	return nil
 }

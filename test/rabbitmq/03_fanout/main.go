@@ -42,7 +42,6 @@ func StartConsumers( /*doneStart chan bool*/ ) {
 		con3.OpenChannel()
 		con3.Bind()
 	}()
-	//doneStart <- true
 	wg.Wait()
 }
 
@@ -58,24 +57,28 @@ func StartPublisher() {
 		},
 		[]byte("{\"username\":\"sysed\"}"),
 	)
+	time.Sleep(time.Second * 1)
 	pub.Publish(
 		map[string]interface{}{
 			"Msg": 2,
 		},
 		[]byte("{\"username\":\"sirajul\"}"),
 	)
+	time.Sleep(time.Second * 1)
 	pub.Publish(
 		map[string]interface{}{
 			"Msg": 3,
 		},
 		[]byte("{\"username\":\"islam\"}"),
 	)
+	time.Sleep(time.Second * 1)
 	pub.Publish(
 		map[string]interface{}{
 			"Msg": 4,
 		},
 		[]byte("{\"username\":\"anik\", \"old\":\"syed\"}"),
 	)
+	time.Sleep(time.Second * 1)
 	pub.Publish(
 		map[string]interface{}{
 			"Msg": 5,
@@ -85,12 +88,7 @@ func StartPublisher() {
 }
 
 func main() {
-	//doneStartConsumer := make(chan bool)
-	//StartConsumers(doneStartConsumer)
 	go StartConsumers()
-	//if <-doneStartConsumer {
-	//	StartPublisher()
-	//}
 	time.Sleep(time.Second * 3)
 	StartPublisher()
 }

@@ -15,6 +15,8 @@ type Con struct {
 	Channel   *amqp.Channel
 }
 
+//type FuncHandler func(name string, msg map[string]interface{})
+
 func NewCon(url, name, exchange, queueName string) *Con {
 	con := new(Con)
 	con.Url = url
@@ -55,7 +57,7 @@ func (c *Con) Close() {
 	}
 }
 
-func (c *Con) Bind( /*funcMsgHandler customSubMessageHandler*/ ) {
+func (c *Con) Bind( /*&handler FuncHandler*/ ) error {
 	exchangeDeclareErr := c.Channel.ExchangeDeclare(
 		c.Exchange, // name
 		"fanout",   // type
@@ -67,6 +69,7 @@ func (c *Con) Bind( /*funcMsgHandler customSubMessageHandler*/ ) {
 	)
 	if exchangeDeclareErr != nil {
 		fmt.Printf("[%v] ExchangeDeclare Error %v\n", c.Name, exchangeDeclareErr)
+		return exchangeDeclareErr
 	}
 
 	_, queueDeclareErr := c.Channel.QueueDeclare(
@@ -79,6 +82,7 @@ func (c *Con) Bind( /*funcMsgHandler customSubMessageHandler*/ ) {
 	)
 	if queueDeclareErr != nil {
 		fmt.Printf("[%v] QueueDeclare Error %v\n", c.Name, queueDeclareErr)
+		return queueDeclareErr
 	}
 
 	bindErr := c.Channel.QueueBind(
@@ -90,6 +94,7 @@ func (c *Con) Bind( /*funcMsgHandler customSubMessageHandler*/ ) {
 	)
 	if bindErr != nil {
 		fmt.Printf("[%v] QueueBind Error %v\n", c.Name, bindErr)
+		return bindErr
 	}
 
 	messages, consumeErr := c.Channel.Consume(
@@ -103,11 +108,15 @@ func (c *Con) Bind( /*funcMsgHandler customSubMessageHandler*/ ) {
 	)
 	if consumeErr != nil {
 		fmt.Printf("[%v] Consume Error %v\n", c.Name, consumeErr)
+		return consumeErr
 	}
 
 	fmt.Printf("[%v] Start wait message...\n", c.Name)
 	for msg := range messages {
-		fmt.Printf("[%v] recv message: %v\n", c.Name, msg.Headers)
+		//fmt.Printf("[%v] recv message: %v\n", c.Name, msg.Headers)
+		fmt.Printf(" => recv [%v]\n", c.Name)
+		//handler(c.Name, msg.Headers)
 		msg.Ack(true)
 	}
+	return nil
 }
