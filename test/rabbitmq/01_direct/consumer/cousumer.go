@@ -16,7 +16,7 @@ type Con struct {
 	Channel    *amqp.Channel
 }
 
-//type FuncHandler func(name string, msg map[string]interface{})
+type ReciveMsgHandler func(name string, msg interface{})
 
 func NewCon(url, name, exchange, queueName, routingKey string) *Con {
 	con := new(Con)
@@ -59,7 +59,7 @@ func (c *Con) Close() {
 	}
 }
 
-func (c *Con) Bind( /*&handler FuncHandler*/ ) error {
+func (c *Con) Bind(handler ReciveMsgHandler) error {
 	exchangeDeclareErr := c.Channel.ExchangeDeclare(
 		c.Exchange, // name
 		"direct",   // type
@@ -115,9 +115,7 @@ func (c *Con) Bind( /*&handler FuncHandler*/ ) error {
 
 	fmt.Printf("[%v] Start wait message...\n", c.Name)
 	for msg := range messages {
-		//fmt.Printf("[%v] recv message: %v\n", c.Name, msg.Headers)
-		fmt.Printf(" => recv [%v]\n", c.Name)
-		//handler(c.Name, msg.Headers)
+		handler(c.Name, msg)
 		msg.Ack(true)
 	}
 	return nil
