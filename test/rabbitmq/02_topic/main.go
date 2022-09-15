@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 	"topic/consumer"
@@ -19,12 +18,11 @@ var mutex = &sync.Mutex{}
 
 func reviceMsgHandler(name string, msg interface{}) {
 	reviceMsg := msg.(amqp.Delivery)
-	msgNum := reviceMsg.Headers["Msg"].(int32)
 	mutex.Lock()
 	if val, ok := consumerMsgs[name]; ok {
-		consumerMsgs[name] = val + ", Msg" + strconv.Itoa(int(msgNum))
+		consumerMsgs[name] = val + ", " + reviceMsg.MessageId
 	} else {
-		consumerMsgs[name] = "Msg" + strconv.Itoa(int(msgNum))
+		consumerMsgs[name] = reviceMsg.MessageId
 	}
 	mutex.Unlock()
 }
@@ -32,47 +30,88 @@ func reviceMsgHandler(name string, msg interface{}) {
 func StartConsumers() {
 	fmt.Println("\n\nStart Consumers!!!!!!!!!!!!!!!!!!!!!!!")
 	var wg sync.WaitGroup
+
+	//Consumer1
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		con1 := consumer.NewCon(RabbitMqUrl, "consumber:1", ExchangeName, "ucl", "user.created.*")
+		con1 := consumer.NewCon(
+			RabbitMqUrl,
+			"consumber:1",
+			ExchangeName,
+			"ucl",
+			"user.created.*",
+			nil,
+		)
 		defer con1.Close()
 		con1.Connection()
 		con1.OpenChannel()
 		con1.Bind(reviceMsgHandler)
 	}()
 
+	//Consumer2
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		con2 := consumer.NewCon(RabbitMqUrl, "consumber:2", ExchangeName, "uul", "user.updated.#")
+		con2 := consumer.NewCon(
+			RabbitMqUrl,
+			"consumber:2",
+			ExchangeName,
+			"uul",
+			"user.updated.#",
+			nil,
+		)
 		defer con2.Close()
 		con2.Connection()
 		con2.OpenChannel()
 		con2.Bind(reviceMsgHandler)
 	}()
 
+	//Consumer3
 	wg.Add(1)
 	go func() {
-		con3 := consumer.NewCon(RabbitMqUrl, "consumber:3", ExchangeName, "ucl.two", "user.#")
+		con3 := consumer.NewCon(
+			RabbitMqUrl,
+			"consumber:3",
+			ExchangeName,
+			"ucl.two",
+			"user.#",
+			nil,
+		)
 		defer con3.Close()
 		con3.Connection()
 		con3.OpenChannel()
 		con3.Bind(reviceMsgHandler)
 	}()
 
+	//Consumer4
 	wg.Add(1)
 	go func() {
-		con4 := consumer.NewCon(RabbitMqUrl, "consumber:4", ExchangeName, "ucl", "user.created.*")
+		con4 := consumer.NewCon(
+			RabbitMqUrl,
+			"consumber:4",
+			ExchangeName,
+			"ucl",
+			"user.created.*",
+			nil,
+		)
 		defer con4.Close()
 		con4.Connection()
 		con4.OpenChannel()
 		con4.Bind(reviceMsgHandler)
 	}()
 
+	//Consumer5
 	wg.Add(1)
 	go func() {
-		con5 := consumer.NewCon(RabbitMqUrl, "consumber:5", ExchangeName, "ua.us", "user.*.us")
+		con5 := consumer.NewCon(
+			RabbitMqUrl,
+			"consumber:5",
+			ExchangeName,
+			"ua.us",
+			"user.*.us",
+			nil,
+		)
 		defer con5.Close()
 		con5.Connection()
 		con5.OpenChannel()
@@ -83,57 +122,95 @@ func StartConsumers() {
 
 func StartPublisher() {
 	fmt.Println("\n\nStart Publisher!!!!!!!!!!!!!!!!!!!!!!!")
+
+	//publisher1
 	pub := publisher.NewPub(RabbitMqUrl, "publisher:1")
 	defer pub.Close()
 	pub.Connection()
 	pub.OpenChannel()
+
+	//Msg1
 	pub.Publish(
 		ExchangeName,
 		"user.created.us",
-		map[string]interface{}{
-			"Msg": 1,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "Application/json",
+			MessageId:   "Msg1",
+			Headers:     nil,
+			Body:        []byte("{\"username\":\"sysed\"}"),
 		},
-		[]byte("{\"username\":\"sysed\"}"),
 	)
+
+	//Msg2
 	pub.Publish(
 		ExchangeName,
 		"user.created.uk",
-		map[string]interface{}{
-			"Msg": 2,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "Application/json",
+			MessageId:   "Msg2",
+			Headers:     nil,
+			Body:        []byte("{\"username\":\"sirajul\"}"),
 		},
-		[]byte("{\"username\":\"sirajul\"}"),
 	)
+
+	//Msg3
 	pub.Publish(
 		ExchangeName,
 		"user.created.bd",
-		map[string]interface{}{
-			"Msg": 3,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "Application/json",
+			MessageId:   "Msg3",
+			Headers:     nil,
+			Body:        []byte("{\"username\":\"islam\"}"),
 		},
-		[]byte("{\"username\":\"islam\"}"),
 	)
+
+	//Msg4
 	pub.Publish(
 		ExchangeName,
 		"user.updated.us",
-		map[string]interface{}{
-			"Msg": 4,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "Application/json",
+			MessageId:   "Msg4",
+			Headers:     nil,
+			Body:        []byte("{\"username\":\"anik\", \"old\":\"syed\"}"),
 		},
-		[]byte("{\"username\":\"anik\", \"old\":\"syed\"}"),
 	)
+
+	//Msg5
 	pub.Publish(
 		ExchangeName,
 		"user.deleted.bd",
-		map[string]interface{}{
-			"Msg": 5,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "Application/json",
+			MessageId:   "Msg5",
+			Headers:     nil,
+			Body:        []byte("{\"username\":\"islam\"}"),
 		},
-		[]byte("{\"username\":\"islam\"}"),
 	)
+
+	//Msg6
 	pub.Publish(
 		ExchangeName,
 		"user",
-		map[string]interface{}{
-			"Msg": 6,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "Application/json",
+			MessageId:   "Msg6",
+			Headers:     nil,
+			Body:        []byte("{\"username\":\"islam\"}"),
 		},
-		[]byte("{\"username\":\"islam\"}"),
 	)
 }
 

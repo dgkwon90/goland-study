@@ -64,7 +64,7 @@ func (c *Con) Close() {
 func (c *Con) Bind(handler ReciveMsgHandler) error {
 	exchangeDeclareErr := c.Channel.ExchangeDeclare(
 		c.Exchange, // name
-		"headers",  // type
+		"fanout",   // type
 		false,      // durable
 		true,       // auto-deleted
 		false,      // internal
@@ -94,7 +94,7 @@ func (c *Con) Bind(handler ReciveMsgHandler) error {
 		c.RoutingKey, // key(routing)
 		c.Exchange,   // exchange
 		false,        // no-wait
-		nil,          // arguments
+		c.Headers,    // arguments
 	)
 	if bindErr != nil {
 		fmt.Printf("[%v] QueueBind Error %v\n", c.Name, bindErr)

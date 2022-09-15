@@ -30,9 +30,12 @@ func reviceMsgHandler(name string, msg interface{}) {
 func StartConsumers() {
 	fmt.Println("\n\nStart Consumers!!!!!!!!!!!!!!!!!!!!!!!")
 	var wg sync.WaitGroup
+
+	//Consumer1
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
 		con1 := consumer.NewCon(
 			RabbitMqUrl,
 			"consumber:1",
@@ -50,6 +53,7 @@ func StartConsumers() {
 		con1.Bind(reviceMsgHandler)
 	}()
 
+	//Consumer2
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -88,6 +92,8 @@ func StartConsumers() {
 
 func StartPublisher() {
 	fmt.Println("\n\nStart Publisher!!!!!!!!!!!!!!!!!!!!!!!")
+
+	//publisher1
 	pub := publisher.NewPub(RabbitMqUrl, "publisher:1")
 	defer pub.Close()
 	pub.Connection()

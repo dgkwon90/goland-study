@@ -12,19 +12,21 @@ type Con struct {
 	Exchange   string
 	QueueName  string
 	RoutingKey string
+	Headers    map[string]interface{}
 	Conn       *amqp.Connection
 	Channel    *amqp.Channel
 }
 
 type ReciveMsgHandler func(name string, msg interface{})
 
-func NewCon(url, name, exchange, queueName, routingKey string) *Con {
+func NewCon(url, name, exchange, queueName, routingKey string, headers map[string]interface{}) *Con {
 	con := new(Con)
 	con.Url = url
 	con.Name = name
 	con.Exchange = exchange
 	con.QueueName = queueName
 	con.RoutingKey = routingKey
+	con.Headers = headers
 	fmt.Printf("[%v] New Con :%v\n", con.Name, con)
 	return con
 }
@@ -92,7 +94,7 @@ func (c *Con) Bind(handler ReciveMsgHandler) error {
 		c.RoutingKey, // key(routing)
 		c.Exchange,   // exchange
 		false,        // no-wait
-		nil,          // arguments
+		c.Headers,    // arguments
 	)
 	if bindErr != nil {
 		fmt.Printf("[%v] QueueBind Error %v\n", c.Name, bindErr)

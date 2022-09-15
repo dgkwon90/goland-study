@@ -7,22 +7,26 @@ import (
 )
 
 type Con struct {
-	Url       string
-	Name      string
-	Exchange  string
-	QueueName string
-	Conn      *amqp.Connection
-	Channel   *amqp.Channel
+	Url        string
+	Name       string
+	Exchange   string
+	QueueName  string
+	RoutingKey string
+	Headers    map[string]interface{}
+	Conn       *amqp.Connection
+	Channel    *amqp.Channel
 }
 
 type ReciveMsgHandler func(name string, msg interface{})
 
-func NewCon(url, name, exchange, queueName string) *Con {
+func NewCon(url, name, exchange, queueName, routingKey string, headers map[string]interface{}) *Con {
 	con := new(Con)
 	con.Url = url
 	con.Name = name
 	con.Exchange = exchange
 	con.QueueName = queueName
+	con.RoutingKey = routingKey
+	con.Headers = headers
 	fmt.Printf("[%v] New Con :%v\n", con.Name, con)
 	return con
 }
@@ -60,7 +64,7 @@ func (c *Con) Close() {
 func (c *Con) Bind(handler ReciveMsgHandler) error {
 	exchangeDeclareErr := c.Channel.ExchangeDeclare(
 		c.Exchange, // name
-		"fanout",   // type
+		"headers",  // type
 		false,      // durable
 		true,       // auto-deleted
 		false,      // internal
@@ -86,11 +90,11 @@ func (c *Con) Bind(handler ReciveMsgHandler) error {
 	}
 
 	bindErr := c.Channel.QueueBind(
-		c.QueueName, // name
-		"",          // key(routing)
-		c.Exchange,  // exchange
-		false,       // no-wait
-		nil,         // arguments
+		c.QueueName,  // name
+		c.RoutingKey, // key(routing)
+		c.Exchange,   // exchange
+		false,        // no-wait
+		c.Headers,    // arguments
 	)
 	if bindErr != nil {
 		fmt.Printf("[%v] QueueBind Error %v\n", c.Name, bindErr)
@@ -113,7 +117,6 @@ func (c *Con) Bind(handler ReciveMsgHandler) error {
 
 	fmt.Printf("[%v] Start wait message...\n", c.Name)
 	for msg := range messages {
-		//fmt.Printf(" => recv [%v]\n", c.Name)
 		handler(c.Name, msg)
 		msg.Ack(true)
 	}

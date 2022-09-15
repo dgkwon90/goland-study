@@ -52,24 +52,18 @@ func (p *Pub) Close() {
 	}
 }
 
-func (p *Pub) Publish(exchangeName string, routingKey string, msgHeader map[string]interface{}, msgBody []byte) error {
-	mandatory := false
-	immediate := false
+func (p *Pub) Publish(exchangeName string, routingKey string, mandatory, immediate bool, pubMsg amqp.Publishing) error {
 	publishErr := p.Channel.PublishWithContext(
 		context.Background(), // context
 		exchangeName,         // exchange
 		routingKey,           // routing key
 		mandatory,            // mandatory
 		immediate,            // immediate
-		amqp.Publishing{
-			ContentType: "application/json",
-			Headers:     msgHeader,
-			Body:        msgBody,
-		})
+		pubMsg)
 	if publishErr != nil {
 		fmt.Printf("[%v] publish Error %v\n", p.Name, publishErr)
 		return publishErr
 	}
-	fmt.Printf("[%v] push message: [%v] %v  => \n", p.Name, routingKey, msgHeader)
+	fmt.Printf("[%v] push message: [%v] %v  => \n", p.Name, routingKey, pubMsg.MessageId)
 	return nil
 }
