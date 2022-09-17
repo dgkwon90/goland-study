@@ -1,4 +1,4 @@
-module fanout
+module rabbitmq
 
 go 1.19
 

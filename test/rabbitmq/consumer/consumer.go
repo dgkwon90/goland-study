@@ -1,3 +1,5 @@
+// amqp를 통해 consumer를 구현
+
 package consumer
 
 import (
@@ -6,35 +8,40 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Con struct {
+// Consumer 구조체
+type Consumer struct {
 	Url        string
 	Name       string
 	Exchange   string
 	QueueName  string
 	RoutingKey string
 	Headers    map[string]interface{}
-	Conn       *amqp.Connection
-	Channel    *amqp.Channel
+	// session
+	Conn    *amqp.Connection
+	Channel *amqp.Channel
 }
 
+// 수신 받은 메시지를 처리하는 Handler 함수
 type ReciveMsgHandler func(name string, msg interface{})
 
-func NewCon(url, name, exchange, queueName, routingKey string, headers map[string]interface{}) *Con {
-	con := new(Con)
+// New 새로운 Consumer를 생성
+func New(url, name, exchange, queueName, routingKey string, headers map[string]interface{}) *Consumer {
+	con := new(Consumer)
 	con.Url = url
 	con.Name = name
 	con.Exchange = exchange
 	con.QueueName = queueName
 	con.RoutingKey = routingKey
 	con.Headers = headers
-	fmt.Printf("[%v] New Con :%v\n", con.Name, con)
+	fmt.Printf("[%v] New Consumer :%v\n", con.Name, con)
 	return con
 }
 
-func (c *Con) Connection() error {
+// Connection Broker와 연결
+func (c *Consumer) Connection() error {
 	conn, connErr := amqp.Dial(c.Url)
 	if connErr != nil {
-		fmt.Printf("[%v] Rebbit MQ Connection Fail %v\n", c.Name, connErr.Error())
+		fmt.Printf("[%v] Rabbit MQ Connection Fail %v\n", c.Name, connErr.Error())
 		return connErr
 	}
 
@@ -42,7 +49,8 @@ func (c *Con) Connection() error {
 	return nil
 }
 
-func (c *Con) OpenChannel() error {
+// OpenChannel Channel을 연다
+func (c *Consumer) OpenChannel() error {
 	ch, chErr := c.Conn.Channel()
 	if chErr != nil {
 		fmt.Printf("[%v] Channel Fail %v\n", c.Name, chErr.Error())
@@ -52,7 +60,8 @@ func (c *Con) OpenChannel() error {
 	return nil
 }
 
-func (c *Con) Close() {
+// Close Channel, Connection을 Close 수행
+func (c *Consumer) Close() {
 	if c.Channel != nil {
 		c.Channel.Close()
 	}
@@ -61,15 +70,16 @@ func (c *Con) Close() {
 	}
 }
 
-func (c *Con) Bind(handler ReciveMsgHandler) error {
+// Bind Exchange 생성, Queue 생성, Queue Bindig 후 Consumer Queue Bind 수행
+func (c *Consumer) Bind(exchangeType string, handler ReciveMsgHandler) error {
 	exchangeDeclareErr := c.Channel.ExchangeDeclare(
-		c.Exchange, // name
-		"topic",    // type
-		false,      // durable
-		true,       // auto-deleted
-		false,      // internal
-		false,      // no-wait
-		nil,        // arguments
+		c.Exchange,   // name
+		exchangeType, // type
+		false,        // durable
+		true,         // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
 	)
 	if exchangeDeclareErr != nil {
 		fmt.Printf("[%v] ExchangeDeclare Error %v\n", c.Name, exchangeDeclareErr)

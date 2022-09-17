@@ -1,3 +1,5 @@
+// amqp를 통해 publisher를 구현
+
 package publisher
 
 import (
@@ -7,25 +9,29 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Pub struct {
-	Url     string
-	Name    string
+// Publisher 구조체
+type Publisher struct {
+	Url  string
+	Name string
+	// session
 	Conn    *amqp.Connection
 	Channel *amqp.Channel
 }
 
-func NewPub(url, name string) *Pub {
-	pub := new(Pub)
+// New 새로운 Publisher를 생성
+func New(url, name string) *Publisher {
+	pub := new(Publisher)
 	pub.Url = url
 	pub.Name = name
-	fmt.Printf("[%v] New Pub :%v\n", pub.Name, pub)
+	fmt.Printf("[%v] New Publisher :%v\n", pub.Name, pub)
 	return pub
 }
 
-func (p *Pub) Connection() error {
+// Connection Broker와 연결
+func (p *Publisher) Connection() error {
 	conn, connErr := amqp.Dial(p.Url)
 	if connErr != nil {
-		fmt.Printf("[%v] Rebbit MQ Connection Fail %v\n", p.Name, connErr.Error())
+		fmt.Printf("[%v] Rabbit MQ Connection Fail %v\n", p.Name, connErr.Error())
 		return connErr
 	}
 
@@ -33,7 +39,8 @@ func (p *Pub) Connection() error {
 	return nil
 }
 
-func (p *Pub) OpenChannel() error {
+// OpenChannel Channel을 연다
+func (p *Publisher) OpenChannel() error {
 	ch, chErr := p.Conn.Channel()
 	if chErr != nil {
 		fmt.Printf("[%v] Channel Fail %v\n", p.Name, chErr.Error())
@@ -43,7 +50,8 @@ func (p *Pub) OpenChannel() error {
 	return nil
 }
 
-func (p *Pub) Close() {
+// Close Channel, Connection을 Close 수행
+func (p *Publisher) Close() {
 	if p.Channel != nil {
 		p.Channel.Close()
 	}
@@ -52,8 +60,8 @@ func (p *Pub) Close() {
 	}
 }
 
-func (p *Pub) Publish(exchangeName, routingKey string, mandatory, immediate bool, pubMsg amqp.Publishing) error {
-
+// Publish 메세지를 broker에 전송
+func (p *Publisher) Publish(exchangeName string, routingKey string, mandatory, immediate bool, pubMsg amqp.Publishing) error {
 	publishErr := p.Channel.PublishWithContext(
 		context.Background(), // context
 		exchangeName,         // exchange
@@ -61,7 +69,6 @@ func (p *Pub) Publish(exchangeName, routingKey string, mandatory, immediate bool
 		mandatory,            // mandatory
 		immediate,            // immediate
 		pubMsg)
-
 	if publishErr != nil {
 		fmt.Printf("[%v] publish Error %v\n", p.Name, publishErr)
 		return publishErr

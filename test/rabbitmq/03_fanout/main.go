@@ -1,21 +1,30 @@
+// fanout exchange publish, consumer 테스트 소스 이다.
+
 package main
 
 import (
-	"fanout/consumer"
-	"fanout/publisher"
 	"fmt"
+	"rabbitmq/consumer"
+	"rabbitmq/publisher"
 	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-const RabbitMqUrl = "amqp://dgkwon:test001@192.168.56.1:5672/"
-const ExchangeName = "fanout_test_exchange"
+const (
+	// rabbitmq broker 가 설치되어 있는 테스트 서버 URL 정보
+	rabbitMqUrl  = "amqp://dgkwon:test001@192.168.56.1:5672/"
+	exchangeName = "fanout_test_exchange"
+	exchangeType = "fanout"
+)
 
+// consumer가 받은 메세지를 저장 하는 map
 var consumerMsgs map[string]string
 var mutex = &sync.Mutex{}
 
+// consumer가 메세지를 수신 받아 호출하는 메시지 핸들러
+// 테스트에서는 메세지를 cousumer 이름을 key 수신 받은 메세지를 map에 저장한다
 func reviceMsgHandler(name string, msg interface{}) {
 	reviceMsg := msg.(amqp.Delivery)
 	mutex.Lock()
@@ -27,19 +36,19 @@ func reviceMsgHandler(name string, msg interface{}) {
 	mutex.Unlock()
 }
 
+// consumer 생성
 func StartConsumers() {
-	fmt.Println("\n\nStart Consumers!!!!!!!!!!!!!!!!!!!!!!!")
-
+	fmt.Println("============ [Start Consumers] ============")
 	var wg sync.WaitGroup
 
-	//Consumer1
+	// Consumer1
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		con1 := consumer.NewCon(
-			RabbitMqUrl,
-			"consumber:1",
-			ExchangeName,
+		con1 := consumer.New(
+			rabbitMqUrl,
+			"consumer:1",
+			exchangeName,
 			"ucl",
 			"",
 			nil,
@@ -47,56 +56,57 @@ func StartConsumers() {
 		defer con1.Close()
 		con1.Connection()
 		con1.OpenChannel()
-		con1.Bind(reviceMsgHandler)
+		con1.Bind(exchangeType, reviceMsgHandler)
 	}()
 
-	//Consumer2
+	// Consumer2
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		con2 := consumer.NewCon(
-			RabbitMqUrl,
-			"consumber:2",
-			ExchangeName,
+		con2 := consumer.New(
+			rabbitMqUrl,
+			"consumer:2",
+			exchangeName,
 			"ucl",
 			"",
 			nil)
 		defer con2.Close()
 		con2.Connection()
 		con2.OpenChannel()
-		con2.Bind(reviceMsgHandler)
+		con2.Bind(exchangeType, reviceMsgHandler)
 	}()
 
-	//Consumer2
+	// Consumer2
 	wg.Add(1)
 	go func() {
-		con3 := consumer.NewCon(
-			RabbitMqUrl,
-			"consumber:3",
-			ExchangeName,
+		con3 := consumer.New(
+			rabbitMqUrl,
+			"consumer:3",
+			exchangeName,
 			"ucl.two",
 			"",
 			nil)
 		defer con3.Close()
 		con3.Connection()
 		con3.OpenChannel()
-		con3.Bind(reviceMsgHandler)
+		con3.Bind(exchangeType, reviceMsgHandler)
 	}()
 	wg.Wait()
 }
 
+// publisher 생성 및 메세지 발신
 func StartPublisher() {
-	fmt.Println("\n\nStart Publisher!!!!!!!!!!!!!!!!!!!!!!!")
+	fmt.Println("============ [Start Publisher] ============")
 
-	//publisher1
-	pub := publisher.NewPub(RabbitMqUrl, "publisher:1", ExchangeName)
+	// publisher1
+	pub := publisher.New(rabbitMqUrl, "publisher:1")
 	defer pub.Close()
 	pub.Connection()
 	pub.OpenChannel()
 
-	//Msg1
+	// Msg1
 	pub.Publish(
-		ExchangeName,
+		exchangeName,
 		"",
 		false,
 		false,
@@ -110,9 +120,9 @@ func StartPublisher() {
 		},
 	)
 
-	//Msg2
+	// Msg2
 	pub.Publish(
-		ExchangeName,
+		exchangeName,
 		"",
 		false,
 		false,
@@ -124,9 +134,9 @@ func StartPublisher() {
 		},
 	)
 
-	//Msg3
+	// Msg3
 	pub.Publish(
-		ExchangeName,
+		exchangeName,
 		"",
 		false,
 		false,
@@ -138,9 +148,9 @@ func StartPublisher() {
 		},
 	)
 
-	//Msg4
+	// Msg4
 	pub.Publish(
-		ExchangeName,
+		exchangeName,
 		"",
 		false,
 		false,
@@ -152,9 +162,9 @@ func StartPublisher() {
 		},
 	)
 
-	//Msg5
+	// Msg5
 	pub.Publish(
-		ExchangeName,
+		exchangeName,
 		"",
 		false,
 		false,
@@ -168,11 +178,13 @@ func StartPublisher() {
 }
 
 func main() {
+	fmt.Println("============ [fanout exchange test] ============")
+
 	consumerMsgs = make(map[string]string)
 	go StartConsumers()
 	time.Sleep(time.Second * 3)
 	StartPublisher()
-	fmt.Println("====== [result] ======")
+	fmt.Println("============ [result] ============")
 	for con, msg := range consumerMsgs {
 		fmt.Printf("%v: %v\n", con, msg)
 	}
