@@ -1,0 +1,38 @@
+SEND:
+<?xml version='1.0'?><stream:stream to='krms-dev.kaonrms.com' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>
+
+
+RECV:
+<?xml version='1.0'?><stream:stream id='bd0823d9494e5a6' version='1.0' xml:lang='en' from='krms-dev.kaonrms.com' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>
+RECV:
+<stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism><mechanism>X-OAUTH2</mechanism></mechanisms></stream:features>
+---------------
+SEND:
+<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" mechanism="PLAIN">AHRlc3QxMjM0AGFsZWxkanJrZGhzMjAxN0A=</auth>
+
+
+RECV:
+<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>
+
+---------------
+SEND:
+<?xml version='1.0'?><stream:stream to='krms-dev.kaonrms.com' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>
+
+
+RECV:
+<?xml version='1.0'?><stream:stream id='cea0b82f94ab545b' version='1.0'  xml:lang='en' from='krms-dev.kaonrms.com' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'>
+RECV:
+<stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/><session xmlns='urn:ietf:params:xml:ns:xmpp-session'><optional/></session><c ver='LcF33OEjnzEcDbJUF4hNy/ifCdE=' node='http://auth.kaonrms.com/' hash='sha-1' xmlns='http://jabber.org/protocol/caps'/><ver xmlns='urn:xmpp:features:rosterver'/><keepalive xmlns='urn:xmpp:keepalive:0'><interval min='60' max='300'/></keepalive></stream:features>
+
+---------------
+SEND:
+<iq type="set" id="1"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"></bind></iq>
+
+
+RECV:
+<iq type='result' id='1'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><jid>test1234@krms-dev.kaonrms.com/XMPPConn1</jid></bind></iq>
+
+
+SEND:
+<iq type="set" id="2"><session xmlns="urn:ietf:params:xml:ns:xmpp-session"></session></iq>
+---------------
