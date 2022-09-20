@@ -14,8 +14,8 @@ import (
 
 // test
 var (
-	ClientJid = "test-xmpp-client@krms-dev.kaonrms.com/XMPPConn1"
-	TargetJid = "0242ac-aprouter-krms_test_agent_00000@krms-dev.kaonrms.com/XMPPConn1"
+	ClientJid = "test-xmpp-client@localhost/XMPPConn1"
+	TargetJid = "test-xmpp-client0000@localhost/XMPPConn1"
 )
 
 type ConnectionRequest struct {
@@ -50,8 +50,8 @@ func connectionRequest(client xmpp.Sender) {
 
 	req.Payload = ConnectionRequest{
 		XMLName:  xml.Name{Space: "urn:broadband-forum-org:cwmp:xmppConnReq-1-0"},
-		UserName: "0242ac-aprouter-krms_test_agent_00000",
-		Password: "aleldjrkdhs2017@", //미디어가온2017@
+		UserName: "test-xmpp-client0000",
+		Password: "test1234",
 	}
 	//req.Payload := .
 
