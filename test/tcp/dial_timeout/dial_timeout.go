@@ -29,15 +29,15 @@ func main() {
 	c, err := DialTimeout("tcp", "10.0.0.1:http", 5*time.Second)
 	if err == nil {
 		c.Close()
-		log.Fatal("connection did not time out")
+		log.Println("connection did not time out")
 	}
 	nErr, ok := err.(net.Error)
 	if !ok {
-		log.Fatal(nErr)
+		log.Printf("not netError: %v", nErr)
 	}
 	if !nErr.Timeout() {
-		log.Fatal("error is not a timeout")
+		log.Printf("error is not a timeout: %v", nErr)
 	} else {
-		log.Println(nErr)
+		log.Printf("timeout: %v", nErr)
 	}
 }

@@ -25,7 +25,7 @@ func main() {
 			// 수신 연결 요청을 수락
 			conn, connErr := listener.Accept()
 			if connErr != nil {
-				log.Fatal(connErr)
+				log.Println(connErr)
 			}
 
 			// 해당 연결을 처리
