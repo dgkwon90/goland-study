@@ -76,7 +76,7 @@ func (c *Consumer) Bind(exchangeType string, handler ReciveMsgHandler) error {
 		c.Exchange,   // name
 		exchangeType, // type
 		false,        // durable
-		true,         // auto-deleted
+		false,        // auto-deleted
 		false,        // internal
 		false,        // no-wait
 		nil,          // arguments
@@ -89,7 +89,7 @@ func (c *Consumer) Bind(exchangeType string, handler ReciveMsgHandler) error {
 	_, queueDeclareErr := c.Channel.QueueDeclare(
 		c.QueueName, // name
 		false,       // durable
-		true,        // auto-deleted
+		false,       // auto-deleted
 		false,       // exclusive
 		false,       // no-wait
 		nil,         // arguments

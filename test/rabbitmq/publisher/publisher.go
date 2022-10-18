@@ -73,6 +73,6 @@ func (p *Publisher) Publish(exchangeName string, routingKey string, mandatory, i
 		fmt.Printf("[%v] publish Error %v\n", p.Name, publishErr)
 		return publishErr
 	}
-	fmt.Printf("[%v] push message: [%v] %v  => \n", p.Name, routingKey, pubMsg.MessageId)
+	fmt.Printf("[%v] push message: [%v] %v  => \n", p.Name, routingKey, pubMsg)
 	return nil
 }

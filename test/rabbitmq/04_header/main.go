@@ -25,7 +25,7 @@ var mutex = &sync.Mutex{}
 
 // consumer가 메세지를 수신 받아 호출하는 메시지 핸들러
 // 테스트에서는 메세지를 cousumer 이름을 key 수신 받은 메세지를 map에 저장한다
-func reviceMsgHandler(name string, msg interface{}) {
+func receiveMsgHandler(name string, msg interface{}) {
 	reviceMsg := msg.(amqp.Delivery)
 	mutex.Lock()
 	if val, ok := consumerMsgs[name]; ok {
@@ -60,7 +60,7 @@ func StartConsumers() {
 		defer con1.Close()
 		con1.Connection()
 		con1.OpenChannel()
-		con1.Bind(exchangeType, reviceMsgHandler)
+		con1.Bind(exchangeType, receiveMsgHandler)
 	}()
 
 	// Consumer2
@@ -81,7 +81,7 @@ func StartConsumers() {
 		defer con2.Close()
 		con2.Connection()
 		con2.OpenChannel()
-		con2.Bind(exchangeType, reviceMsgHandler)
+		con2.Bind(exchangeType, receiveMsgHandler)
 	}()
 
 	// Consumer3
@@ -96,7 +96,7 @@ func StartConsumers() {
 		defer con3.Close()
 		con3.Connection()
 		con3.OpenChannel()
-		con3.Bind(exchangeType, reviceMsgHandler)
+		con3.Bind(exchangeType, receiveMsgHandler)
 	}()
 	wg.Wait()
 }
